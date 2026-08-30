@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ar" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#000000">
+<title>ادفع وقيّمنا</title>
+<style>
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;padding:0;
+    height:100%;width:100%;
+    overflow:hidden;
+    position:fixed;
+    inset:0;
+    background:#000;
+    overscroll-behavior:none;
+    -webkit-user-select:none;
+    user-select:none;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,Arial,sans-serif;
+    touch-action:manipulation;
+  }
+
+  /* ---------- Loading splash ---------- */
+  .splash{
+    position:fixed;
+    inset:0;
+    z-index:9999;
+    background:#000;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:20px;
+    transition:opacity .55s ease, transform .6s ease;
+  }
+  .splash.hide{
+    opacity:0;
+    transform:scale(1.04);
+    pointer-events:none;
+  }
+  .cut-wrap{
+    position:relative;
+    width:220px;
+    height:26px;
+  }
+  .track{
+    position:absolute;
+    left:0;right:0;top:50%;
+    height:1.5px;
+    transform:translateY(-50%);
+    background:rgba(255,255,255,.22);
+  }
+  .fill{
+    position:absolute;
+    left:0;top:50%;
+    height:1.5px;
+    transform:translateY(-50%);
+    background:#fff;
+    width:0%;
+  }
+  .scissor{
+    position:absolute;
+    top:50%;
+    left:0%;
+    width:30px;
+    height:26px;
+    transform:translate(-6px,-50%);
+    filter:drop-shadow(0 0 3px rgba(0,0,0,.6));
+  }
+  .scissor svg{width:100%;height:100%;display:block;}
+  .blade-top{transform-origin:24px 12px;animation:snipTop .5s ease-in-out infinite;}
+  .blade-bottom{transform-origin:24px 12px;animation:snipBottom .5s ease-in-out infinite;}
+  @keyframes snipTop{0%,100%{transform:rotate(0deg);}50%{transform:rotate(11deg);}}
+  @keyframes snipBottom{0%,100%{transform:rotate(0deg);}50%{transform:rotate(-11deg);}}
+  @media (prefers-reduced-motion:reduce){
+    .splash{display:none;}
+  }
+
+  /* ---------- Main page ---------- */
+  .stage{
+    position:fixed;
+    inset:0;
+    height:100vh;
+    height:100dvh;
+    width:100vw;
+  }
+  video{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    background:#000;
+  }
+  .scrim{
+    position:absolute;
+    inset:0;
+    background:linear-gradient(to top, rgba(0,0,0,.72) 0%, rgba(0,0,0,.5) 42%, rgba(0,0,0,.38) 100%);
+    pointer-events:none;
+  }
+  .actions{
+    position:absolute;
+    left:0;right:0;
+    bottom:calc(env(safe-area-inset-bottom, 0px) + 26px);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:14px;
+    padding:0 20px;
+  }
+  .btn{
+    all:unset;
+    box-sizing:border-box;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    width:100%;
+    max-width:340px;
+    height:74px;
+    padding:7px 24px 7px 7px;
+    border-radius:999px;
+    background:#000;
+    box-shadow:0 14px 30px rgba(0,0,0,.5);
+    cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+    transition:transform .15s ease, opacity .5s ease, translate .5s cubic-bezier(.19,1,.22,1);
+    opacity:0;
+    translate:0 14px;
+  }
+  .actions.show .btn{opacity:1;translate:0 0;}
+  .actions.show .btn:nth-of-type(1){transition-delay:.05s;}
+  .actions.show .btn:nth-of-type(2){transition-delay:.16s;}
+  .btn:active{transform:scale(.965);}
+  .badge{
+    width:60px;
+    height:60px;
+    border-radius:16px;
+    background:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex:0 0 auto;
+    overflow:hidden;
+    padding:4px;
+  }
+  .brand-badge{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:2px;
+    line-height:1;
+  }
+  .ip-dark{color:#512772;}
+  .ip-coral{color:#F48271;}
+  .ip-orange{color:#EF6823;}
+  .ip-purple{color:#7D569E;}
+  .instapay-mark{font-size:19px;font-weight:900;font-style:italic;letter-spacing:-1px;}
+  .instapay-word{font-size:10.5px;font-weight:800;font-style:italic;letter-spacing:.5px;margin-top:1px;}
+  .g-blue{color:#4285F4;}
+  .g-red{color:#EA4335;}
+  .g-yellow{color:#FBBC05;}
+  .g-green{color:#34A853;}
+  .google-word{font-size:16px;font-weight:700;white-space:nowrap;}
+  .stars{font-size:10px;letter-spacing:1.5px;color:#F5A623;}
+  .label{
+    flex:1;
+    text-align:center;
+    color:#fff;
+    font-weight:700;
+    font-size:17px;
+    letter-spacing:.3px;
+    white-space:nowrap;
+  }
+</style>
+</head>
+<body>
+
+  <div class="splash" id="splash">
+    <div class="cut-wrap" id="cutwrap">
+      <div class="track"></div>
+      <div class="fill" id="fill"></div>
+      <div class="scissor" id="scissor">
+        <svg viewBox="0 0 28 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round">
+          <circle cx="5" cy="6" r="3"/>
+          <circle cx="5" cy="18" r="3"/>
+          <path class="blade-top" d="M7.5 7.5 L24 12"/>
+          <path class="blade-bottom" d="M7.5 16.5 L24 12"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="stage" id="stage">
+    <video id="vid" src="hero.mp4" autoplay muted loop playsinline webkit-playsinline="true" preload="auto"></video>
+    <div class="scrim"></div>
+
+    <div class="actions" id="actions">
+      <!-- IMPORTANT: replace the href below with your real InstaPay payment link -->
+      <a class="btn" href="PASTE_YOUR_INSTAPAY_LINK_HERE" target="_blank" rel="noopener noreferrer">
+        <span class="badge">
+          <span class="brand-badge">
+            <span class="instapay-mark"><b class="ip-dark">i</b><b class="ip-coral">&raquo;</b><b class="ip-orange">&raquo;</b><b class="ip-purple">P</b></span>
+            <span class="instapay-word"><b class="ip-dark">INSTA</b><b class="ip-purple">PAY</b></span>
+          </span>
+        </span>
+        <span class="label">Pay Here</span>
+      </a>
+
+      <a class="btn" href="https://search.google.com/local/writereview?placeid=ChIJS5c59d6d-RQR_EPHPdYQG_g" target="_blank" rel="noopener noreferrer">
+        <span class="badge">
+          <span class="brand-badge">
+            <span class="google-word"><b class="g-blue">G</b><b class="g-red">o</b><b class="g-yellow">o</b><b class="g-blue">g</b><b class="g-green">l</b><b class="g-red">e</b></span>
+            <span class="stars">★★★★★</span>
+          </span>
+        </span>
+        <span class="label">Rate Here</span>
+      </a>
+    </div>
+  </div>
+
+<script>
+  var vid = document.getElementById('vid');
+  function tryPlay(){
+    var p = vid.play();
+    if (p !== undefined) { p.catch(function(){}); }
+  }
+  tryPlay();
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden) tryPlay(); });
+
+  document.getElementById('stage').addEventListener('click', function(e){
+    if (e.target.closest('.btn')) return;
+    if (vid.paused) { tryPlay(); return; }
+    vid.muted = !vid.muted;
+  });
+
+  // ---- Splash: scissors cut the loading line ----
+  (function(){
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var splash = document.getElementById('splash');
+    var actions = document.getElementById('actions');
+
+    if (reduce){
+      splash.style.display='none';
+      actions.classList.add('show');
+      return;
+    }
+
+    var fill = document.getElementById('fill');
+    var scissor = document.getElementById('scissor');
+    var duration = 1500;
+    var start = null;
+
+    function ease(t){ return t<0.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2; }
+
+    function frame(ts){
+      if(!start) start = ts;
+      var t = Math.min((ts-start)/duration, 1);
+      var e = ease(t);
+      fill.style.width = (e*100)+'%';
+      scissor.style.left = 'calc(' + (e*100) + '% - 6px)';
+      if (t < 1){
+        requestAnimationFrame(frame);
+      } else {
+        setTimeout(function(){
+          splash.classList.add('hide');
+          actions.classList.add('show');
+          setTimeout(function(){ splash.style.display='none'; }, 650);
+        }, 280);
+      }
+    }
+    requestAnimationFrame(frame);
+  })();
+</script>
+</body>
+</html>
